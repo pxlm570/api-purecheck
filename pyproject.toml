@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "api-purecheck"
+version = "1.0.0"
+description = "A lightweight local tool for checking whether an LLM API gateway behaves like its claimed model and has common relay anomalies."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+authors = [
+  { name = "API PureCheck Contributors" }
+]
+keywords = ["llm", "api", "gateway", "relay", "audit", "model", "fingerprint"]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Environment :: Console",
+  "Intended Audience :: End Users/Desktop",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only"
+]
+dependencies = []
+
+[project.scripts]
+api-purecheck = "api_purecheck.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
