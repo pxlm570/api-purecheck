@@ -1,0 +1,19 @@
+{
+  "defaults": {
+    "api_key": "YOUR_API_KEY",
+    "api_type": "openai-compatible",
+    "level": "quick",
+    "timeout_seconds": 60,
+    "baseline_dir": "baselines"
+  },
+  "targets": [
+    {
+      "base_url": "https://example-one.com/v1",
+      "claimed_model": "gpt-4o"
+    },
+    {
+      "base_url": "https://example-two.com/v1",
+      "claimed_model": "deepseek-v4-pro"
+    }
+  ]
+}

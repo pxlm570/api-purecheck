@@ -1,0 +1,20 @@
+[
+  {
+    "probe_id": "custom.identity_marker",
+    "title": "自定义标记输出",
+    "prompt": "请只输出 API_PURECHECK_CUSTOM_OK，不要解释。",
+    "validator": "contains",
+    "expected": "API_PURECHECK_CUSTOM_OK",
+    "max_tokens": 32
+  },
+  {
+    "probe_id": "custom.json",
+    "title": "自定义 JSON 输出",
+    "prompt": "只输出 JSON：{\"tool\":\"api-purecheck\"}",
+    "validator": "json_value",
+    "expected": {
+      "tool": "api-purecheck"
+    },
+    "max_tokens": 64
+  }
+]

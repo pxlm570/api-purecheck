@@ -1,0 +1,11 @@
+{
+  "base_url": "https://example.com/v1",
+  "api_key": "YOUR_API_KEY",
+  "claimed_model": "gpt-4o",
+  "api_type": "openai-compatible",
+  "level": "standard",
+  "format": "json",
+  "timeout_seconds": 60,
+  "baseline_dir": "baselines",
+  "probe_file": ""
+}
