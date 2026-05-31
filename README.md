@@ -2,213 +2,172 @@
 
 > 你的中转站，真的纯吗？
 
-API PureCheck 是一个轻量、本地运行的中转站 API 纯度体检工具。填入 API 地址、Key 和模型名，它会用少量请求完成协议检查、行为探针、模型族画像和风险扫描，直接告诉你：这条 API 链路到底像不像它声称的模型。
+API PureCheck 是一个轻量、本地运行的中转站 API 纯度检测工具。你填入 API 地址、Key 和声称模型，它会用少量请求完成协议检查、行为探针、模型族画像和风险扫描，给出一份普通用户也能看懂的概率报告。
 
-它的目标很直接：让普通用户、学生和开发者快速发现可疑的模型降级、替换、fallback、路由漂移或中转链路异常。
-
-## 它能帮你做什么
-
-API PureCheck v1.0 已具备本地 Web UI、CLI、脱敏报告、模型族画像和风险检查能力。它适合快速回答三个问题：
+它主要帮你回答三个问题：
 
 - 这个 API 能不能正常访问？
 - 它像不像声称的模型？
 - 这条中转链路有没有明显异常？
 
-模型概率判断默认使用协议特征、行为探针和模型族画像；风险检查使用 `clean / anomaly / inconclusive` 三态结果。真实官方基线不是必需项，工具会在报告里明确说明判断依据和置信度。
+## 最快开始
+
+如果你只是想马上检测，不想折腾环境，直接走 Windows 发布包：
+
+1. 打开最新发布页：
+
+```text
+https://github.com/pxlm570/api-purecheck/releases/latest
+```
+
+2. 下载 `api-purecheck-windows.zip`。
+3. 如果你的电脑还没有 Python，请先安装 Python 3.11 或更高版本。
+4. 安装 Python 时，勾选：
+
+```text
+Add python.exe to PATH
+```
+
+5. 解压下载好的 zip。
+6. 双击运行：
+
+```text
+scripts/start_windows.bat
+```
+
+7. 浏览器会自动打开；如果没有自动打开，就手动访问：
+
+```text
+http://127.0.0.1:8765
+```
+
+## 页面里怎么填
+
+打开页面后，你会看到这些输入项：
+
+- `API 地址`：填中转站文档里的 `base_url`，不要填网站首页。
+- `API Key`：填你的 key。它只会发给本机服务，再由本机去请求你填写的 API 地址。
+- `API 类型`：大多数 OpenAI 风格接口选 `OpenAI-compatible`；Claude 官方或 Claude Code 风格接口通常选 `Anthropic Messages API`。
+- `模型族`：选你准备检测的大类，比如 GPT、Claude、DeepSeek、Kimi、GLM、MiniMax。
+- `声称模型`：填中转站文档里写的完整模型名，不要只填模型族。
+- `检测强度`：第一次推荐 `standard`，成本和信息量更平衡。
+
+如果你不确定某一项怎么填，优先以中转站自己的使用文档为准。
+
+## 第一次检测怎么做
+
+第一次使用时，建议按这个顺序：
+
+1. 先把配置填完整。
+2. 先点“只预估请求数”，确认这次检测大概要发起多少次请求。
+3. 可以接受成本后，再点“开始检测”。
+4. 检测完成后，下载 JSON、Markdown 或 HTML 报告。
 
 当前内置检测强度：
 
-- quick：3 个请求，最低成本，适合先确认 API 是否打通；
-- standard：8 个请求，默认推荐，覆盖核心探针、流式完整性和错误泄漏检查；
-- deep：18 个请求，更充分，但仍控制成本。
+- `quick`：3 个请求，最低成本，适合先确认 API 是否打通。
+- `standard`：8 个请求，默认推荐，覆盖核心探针、流式完整性和错误泄漏检查。
+- `deep`：18 个请求，更充分，但仍然控制成本。
 
-## 普通用户 3 步开始
+## 报告怎么看
 
-1. 双击运行：
+报告里最值得先看的部分是：
 
-```text
-scripts/start_windows.bat
-```
+- `纯度结论`：这条 API 当前表现是否接近你填写的声称模型。
+- `置信度`：当前证据是否足够稳定，还是只能给出保守判断。
+- `最可能匹配`：当前候选模型的概率分布。
+- `其他模型`：保留给未知模型、候选集外模型或证据不足的概率空间。
+- `风险检查`：检查模型身份、token 注入、上下文截断、错误泄漏、响应改写和 stream 完整性等异常。
+- `访问诊断`：如果请求失败，这里通常会直接告诉你更可能是地址错了、模型名错了、权限错了，还是协议类型不匹配。
 
-2. 打开页面：
+## 常见填写误区
 
-```text
-http://127.0.0.1:8765
-```
+- 把网站首页当成 API 地址：错误。应填文档里的 `base_url`。
+- 把 `gpt`、`claude`、`deepseek` 这种模型族名字当成模型名：错误。应填完整模型名。
+- Claude 风格中转站却选了 `OpenAI-compatible`：容易报参数错误或请求被拒绝。
+- 不先做请求数预估就直接跑 `deep`：可能浪费额度。
 
-3. 填入 API 地址、Key 和声称模型，先看请求数，再点“开始检测”。检测完成后即可下载 JSON / Markdown / HTML 报告。
+## 开发者和 CLI
 
-## 使用方式
+如果你想直接从源码运行，先进入项目目录。
 
-Windows 用户可以直接运行：
+最省事的方式有两种：
 
-```text
-scripts/start_windows.bat
-```
-
-PowerShell 用户也可以运行：
+1. 不安装，直接运行：
 
 ```powershell
-scripts/start_windows.ps1
+python -m api_purecheck --help
+python -m api_purecheck serve
 ```
 
-启动本地页面：
+2. 安装本地命令后再运行：
 
-```bash
+```powershell
+python -m pip install -e .
+api-purecheck --help
 api-purecheck serve
 ```
 
-启动后打开：
+命令行检测示例：
 
-```text
-http://127.0.0.1:8765
+```powershell
+api-purecheck check `
+  --base-url https://example.com/v1 `
+  --api-key YOUR_API_KEY `
+  --model gpt-4o `
+  --api-type openai-compatible `
+  --level standard
 ```
 
-命令行检测：
+只检查配置，不发起真实请求：
 
-```bash
-api-purecheck check \
-  --base-url https://example.com/v1 \
-  --api-key YOUR_API_KEY \
-  --model gpt-4o \
-  --api-type openai-compatible \
-  --level standard \
-  --baseline-dir baselines
-```
-
-只校验配置，不发起请求：
-
-```bash
-api-purecheck check \
-  --config examples/config.example.json \
+```powershell
+api-purecheck check `
+  --config examples/config.example.json `
   --dry-run
 ```
 
 导出 JSON 报告：
 
-```bash
-api-purecheck check \
-  --config examples/config.example.json \
-  --format json \
+```powershell
+api-purecheck check `
+  --config examples/config.example.json `
+  --format json `
   --output report.json
 ```
 
-导出 HTML 报告：
+## 已支持内容
 
-```bash
-api-purecheck check \
-  --config examples/config.example.json \
-  --format html \
-  --output report.html \
-  --dry-run
-```
-
-导出 Markdown 报告：
-
-```bash
-api-purecheck check \
-  --config examples/config.example.json \
-  --format markdown \
-  --output report.md \
-  --dry-run
-```
-
-采集可信模型基线：
-
-```bash
-api-purecheck calibrate \
-  --provider openai \
-  --base-url https://api.openai.com/v1 \
-  --api-key YOUR_API_KEY \
-  --model gpt-4o \
-  --api-type openai-compatible \
-  --level quick \
-  --output baselines/gpt-4o/2026-xx.jsonl
-```
-
-轻量监控：
-
-```bash
-api-purecheck monitor \
-  --config examples/config.example.json \
-  --runs 3 \
-  --interval-seconds 3600 \
-  --output-dir reports/monitor
-```
-
-先预估请求数：
-
-```bash
-api-purecheck monitor \
-  --config examples/config.example.json \
-  --runs 3 \
-  --dry-run
-```
-
-批量预估多个 endpoint：
-
-```bash
-api-purecheck batch \
-  --file examples/batch.example.json \
-  --dry-run
-```
-
-查看常见模型名示例：
-
-```bash
-api-purecheck models
-api-purecheck models --provider anthropic
-api-purecheck models --provider gpt
-api-purecheck models --provider claude
-api-purecheck profiles
-```
-
-使用自定义探针：
-
-```bash
-api-purecheck check \
-  --config examples/config.example.json \
-  --probe-file examples/probes.example.json \
-  --dry-run
-```
+- 本地 Web UI
+- CLI
+- OpenAI-compatible API
+- Anthropic Messages API
+- GPT / Claude / DeepSeek / Kimi / GLM / MiniMax 模型族
+- 概率报告、置信度、证据解释和风险检查
+- JSON / Markdown / HTML 报告导出
 
 ## 隐私原则
 
 - API key 默认只在本地使用。
 - 默认不上传 API key、请求或响应。
-- 日志和报告必须自动脱敏 API key。
+- 日志和报告会自动脱敏 API key。
 - 检测前会提示请求数量和可能成本。
 
-## v1.0 已支持
+## 重要边界
 
-- 本地 Web UI；
-- CLI；
-- OpenAI-compatible API；
-- GPT / Claude 候选模型；
-- DeepSeek / Kimi / GLM / MiniMax 等常见国产模型族；
-- “其他模型”概率；
-- 概率报告、置信度、三态风险项和证据解释；
-- token 注入、上下文截断、错误泄漏、响应改写等轻量风险检查；
-- HTML / JSON / Markdown 报告导出。
+API PureCheck 输出的是概率判断，不是密码学证明，也不是法律审计报告。它适合帮你快速发现可疑链路、兼容性问题、模型名错误和明显异常。
 
-补充文档：
+## 补充文档
 
+- [用户指南](docs/USER_GUIDE.md)
 - [常见问题排查](docs/TROUBLESHOOTING.md)
+- [v1.0.0 发布说明](docs/RELEASE_NOTES_1.0.0.md)
 
 ## 开发验证
 
-当前项目暂不依赖第三方包。运行测试：
-
-PowerShell 下直接从源码运行：
-
-```powershell
-python -m api_purecheck --help
-python -m api_purecheck check --config examples/config.example.json --dry-run
-```
-
 运行测试：
 
-```bash
+```powershell
 python -m unittest discover -s tests
 ```
 
@@ -217,5 +176,3 @@ Windows 发布前自检：
 ```powershell
 scripts/check_windows.ps1
 ```
-
-`scripts/check_windows.ps1` 会检查 CLI、dry-run、模型画像和单元测试。Web 页面建议发布前用浏览器打开一次，确认首屏和下载按钮显示正常。
